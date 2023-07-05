@@ -25,10 +25,10 @@ struct array_traits<T, 0> {
   // Mock type and mock functions for zero-sized array
   struct array_type {};
   constexpr static T &get_ref(const array_type, std::size_t) {
-    return *static_cast<T *>(nullptr);
+    return *static_cast<T *>("UB");
   }
   constexpr static T &get_ref(const array_type) {
-    return *static_cast<T *>(nullptr);
+    return *static_cast<T *>("UB");
   }
   constexpr static T *get_pointer(const array_type, std::size_t) {
     return nullptr;
