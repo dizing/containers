@@ -13,6 +13,12 @@ struct ListNode : public BaseListNode {
 
   ListNode(const T& value) : value_(value) {
   }
+  ListNode(T&& value) : value_(std::move(value)) {
+  }
+  template <typename... Args>
+  ListNode(Args&&... value) : value_(T(std::forward<Args>(value)...)){
+  }
+  
 };
 
 template <typename T, typename Allocator = std::allocator<T>>
@@ -31,12 +37,19 @@ class list {
   base_node fakeNode_ = {nullptr, nullptr};
 
   list() : alloc_(node_alloc()) {}
-    
-  node_pointer CreateNodeByCopy(const_reference value) {
+
+  template <typename... Args>  
+  node_pointer CreateNode(Args&&... value) {
     node_pointer temp = std::allocator_traits<node_alloc>::allocate(alloc_, 1);
     std::allocator_traits<node_alloc>::construct(
-        alloc_, temp, value);
+        alloc_, temp, std::forward<Args>(value)...);
     return temp;
+  }
+  template <typename... Args>  
+  void InsertNode(node_pointer pos, Args&&... value) {
+    node_pointer new_node = CreateNode(std::forward<Args>(value)...);
+    pos->next = new_node;
+    new_node->prev = pos;
   }
 
  private:
