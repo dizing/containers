@@ -37,7 +37,7 @@ TEST_F(ListTest, test) {
   testClass name = testClass("c", "d");
   auto n1 = c.CreateNode(testClass("1", "2"));
   c.InsertNode(n1, name);
-  c.InsertNode(static_cast<ListNode<testClass>*>(n1->next), "huy", "pizda");
+  c.InsertNode(static_cast<ListNode<testClass>*>(n1->next), "bbbb", "aaa");
   for(int i = 0; i < 3; ++i) {
     std::cout << n1->value_.a << std::endl;
     n1 = static_cast<ListNode<testClass>*>(n1->next);
