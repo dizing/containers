@@ -20,8 +20,8 @@ struct ListNode : public BaseListNode {
 template <typename T, bool isConst>
 struct ListIterator {
   using value_type = T;
-  using reference = value_type &;
-  using const_reference = const value_type &;
+  using reference = typename std::conditional_t<isConst, const value_type &, value_type &>;
+  using pointer = typename std::conditional_t<isConst, const value_type *, value_type *>;
   using base_node = BaseListNode;
   using node = ListNode<value_type>;
   base_node *node_;
@@ -36,6 +36,7 @@ struct ListIterator {
     node_ = node_->prev;
     return *this;
   }
+
   reference operator*() const { return static_cast<node *>(node_)->value_; }
   base_node *GetNode() { return node_; }
   bool operator==(const ListIterator &other) const {
