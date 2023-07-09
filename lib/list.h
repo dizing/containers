@@ -20,8 +20,10 @@ struct ListNode : public BaseListNode {
 template <typename T, bool isConst>
 struct ListIterator {
   using value_type = T;
-  using reference = typename std::conditional_t<isConst, const value_type &, value_type &>;
-  using pointer = typename std::conditional_t<isConst, const value_type *, value_type *>;
+  using reference =
+      typename std::conditional_t<isConst, const value_type &, value_type &>;
+  using pointer =
+      typename std::conditional_t<isConst, const value_type *, value_type *>;
   using base_node = BaseListNode;
   using node = ListNode<value_type>;
   base_node *node_;
@@ -62,9 +64,25 @@ class list {
 
   // Constructors
 
-  list() : alloc_(node_alloc()), size_(0) {
+  list()
+      : alloc_(node_alloc()), size_(0), fakeNode_({&fakeNode_, &fakeNode_}) {}
+
+  explicit list(size_type n, const Allocator &alloc = Allocator())
+      : alloc_(node_alloc()), size_(0) {
     fakeNode_.next = &fakeNode_;
     fakeNode_.prev = &fakeNode_;
+    for (size_type i = 0; i < n; ++i) {
+      emplace_back();
+    }
+  }
+
+  list(const std::initializer_list<value_type> &items)
+      : alloc_(node_alloc()), size_(0), fakeNode_({&fakeNode_, &fakeNode_}) {
+    fakeNode_.next = &fakeNode_;
+    fakeNode_.prev = &fakeNode_;
+    for (auto &element : items) {
+      push_back(element);
+    }
   }
 
   // Element Access
@@ -91,7 +109,7 @@ class list {
     InsertNodeBefore(pos, value);
     return --pos;
   };
-  iterator insert(iterator pos, value_type && value) {
+  iterator insert(iterator pos, value_type &&value) {
     InsertNodeBefore(pos, std::move(value));
     return --pos;
   }
@@ -99,6 +117,11 @@ class list {
 
   void push_back(value_type &&value) {
     InsertNodeBefore(end(), std::move(value));
+  }
+
+  template <typename... Args>
+  void emplace_back(Args &&...value) {
+    InsertNodeBefore(end(), std::forward(value)...);
   }
 
   void push_front(const_reference value) { InsertNodeBefore(begin(), value); }
@@ -110,7 +133,7 @@ class list {
  private:
   node_alloc alloc_;
   size_type size_;
-  base_node fakeNode_ = {nullptr, nullptr};
+  base_node fakeNode_;
 
   // Creates List Node with value_type element inside.
   // Receives universal reference parameter pack.

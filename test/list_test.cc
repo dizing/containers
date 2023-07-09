@@ -2,13 +2,6 @@
 
 #include "containers.h"
 #include "gtest/gtest.h"
-class ListTest : public ::testing::Test {
- protected:
-  ListTest() {}
-
-  std::list<int> a = {1, 2, 3};
-  list<int> b = list<int>();
-};
 
 struct testClass {
   std::string a;
@@ -31,28 +24,40 @@ struct testClass {
   }
 };
 
-TEST_F(ListTest, test) {
+class ListTest : public ::testing::Test {
+ protected:
+  ListTest() {}
+
+  std::list<testClass> stdll = std::list<testClass>();
+  list<testClass> ll = list<testClass>();
+};
+
+TEST_F(ListTest, Modifiers) {
   testClass name = testClass("Maron", "Kubanov");
-  std::cout << "----" << std::endl;
-  std::list<testClass> c;
-  c.push_back(testClass("1", "2"));
-  c.push_back(name);
-  c.push_front(testClass("me", "me"));
-  c.insert(++c.begin(), testClass("you", "you"));
-  // c.push_back("bbbb", "aaa");
-  for (auto& element : c) {
-    std::cout << element.a << std::endl;
+  stdll.push_back(testClass("1", "2"));
+  stdll.push_back(name);
+  stdll.push_front(testClass("me", "me"));
+  stdll.insert(++ ++stdll.begin(), testClass("you", "you"));
+  stdll.insert(stdll.begin(), testClass("they", "are"));
+  stdll.emplace_back();
+  ll.push_back(testClass("1", "2"));
+  ll.push_back(name);
+  ll.push_front(testClass("me", "me"));
+  ll.insert(++ ++ll.begin(), testClass("you", "you"));
+  ll.insert(ll.begin(), testClass("they", "are"));
+  ll.emplace_back();
+  EXPECT_EQ(stdll.size(), ll.size());
+  auto ll_it = ll.begin();
+  auto stdll_it = stdll.begin();
+  for (std::size_t i = 0; i < ll.size(); ++i) {
+    EXPECT_EQ(*ll_it, *stdll_it);
+    ++ll_it;
+    ++stdll_it;
   }
-  std::cout << "----" << std::endl;
-  list<testClass> c1;
-  c1.push_back(testClass("1", "2"));
-  c1.push_back(name);
-  c1.push_front(testClass("me", "me"));
-  c1.insert(++c1.begin(), testClass("you", "you"));
-  // c.push_back("bbbb", "aaa");
-  for (auto& element : c1) {
-    std::cout << element.a << std::endl;
-  }
-  EXPECT_EQ(c1.front(), c.front());
-  EXPECT_EQ(c1.back(), c.back());
+}
+
+TEST_F(ListTest, test) {
+  // const std::list<testClass> stdl = {{"a", "b"}, {"c", "d"}};
+  // std::cout << "----" << std::endl;
+  // const list<testClass> l = {{"a", "b"}, {"c", "d"}};
 }
