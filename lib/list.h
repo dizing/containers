@@ -4,9 +4,38 @@
 #include <memory>
 
 struct BaseListNode {
-  BaseListNode *prev;
-  BaseListNode *next;
+  BaseListNode *prev_;
+  BaseListNode *next_;
+
+  BaseListNode() = default;
+  BaseListNode(const BaseListNode &) = delete;
+
+  void HookBefore(BaseListNode *other) {
+    next_ = other;
+    prev_ = other->prev_;
+    prev_->next_ = this;
+    other->prev_ = this;
+  }
+  void Unhook() {
+    prev_->next_ = next_;
+    next_->prev_ = prev_;
+    prev_ = this;
+    next_ = this;
+  }
+  static void swap(BaseListNode &lhs, BaseListNode &rhs) {
+    BaseListNode *lhs_next = lhs.next_;
+    BaseListNode *rhs_next = rhs.next_;
+    lhs.Unhook();
+    rhs.Unhook();
+    if (rhs_next != &rhs) {
+      lhs.HookBefore(rhs_next);
+    };
+    if (lhs_next != &lhs) {
+      rhs.HookBefore(lhs_next);
+    };
+  }
 };
+
 template <typename T>
 struct ListNode : public BaseListNode {
   T value_;
@@ -31,11 +60,11 @@ struct ListIterator {
   ListIterator(base_node *node) : node_(node) {}
 
   ListIterator<T, isConst> &operator++() {
-    node_ = node_->next;
+    node_ = node_->next_;
     return *this;
   }
   ListIterator<T, isConst> &operator--() {
-    node_ = node_->prev;
+    node_ = node_->prev_;
     return *this;
   }
 
@@ -58,7 +87,10 @@ class list {
   using size_type = std::size_t;
   using base_node = BaseListNode;
   using node = ListNode<value_type>;
-  using node_alloc = typename Allocator::rebind<node>::other;
+  using value_traits = std::allocator_traits<Allocator>;
+  using node_alloc = typename value_traits::rebind_alloc<
+      node>;  // typename Allocator::rebind<node>::other;
+  using node_traits = typename value_traits::rebind_traits<node>;
   using node_pointer = node *;
   using base_node_pointer = base_node *;
 
@@ -68,9 +100,7 @@ class list {
       : alloc_(node_alloc()), size_(0), fakeNode_({&fakeNode_, &fakeNode_}) {}
 
   explicit list(size_type n, const Allocator &alloc = Allocator())
-      : alloc_(node_alloc()), size_(0) {
-    fakeNode_.next = &fakeNode_;
-    fakeNode_.prev = &fakeNode_;
+      : alloc_(node_alloc()), size_(0), fakeNode_({&fakeNode_, &fakeNode_}) {
     for (size_type i = 0; i < n; ++i) {
       emplace_back();
     }
@@ -78,31 +108,33 @@ class list {
 
   list(const std::initializer_list<value_type> &items)
       : alloc_(node_alloc()), size_(0), fakeNode_({&fakeNode_, &fakeNode_}) {
-    fakeNode_.next = &fakeNode_;
-    fakeNode_.prev = &fakeNode_;
     for (auto &element : items) {
       push_back(element);
     }
   }
 
-  // Element Access
-  const_reference front() { return *begin(); }
+  list(const list &)
+      : alloc_(node_alloc()), size_(0), fakeNode_({&fakeNode_, &fakeNode_}) {
+    // empty
+  }
 
-  const_reference back() { return *(--end()); }
+  // Element Access
+  const_reference front() const { return *begin(); }
+
+  const_reference back() const { return *(--end()); }
 
   // Iterators
 
-  iterator begin() { return fakeNode_.next; }
-
+  iterator begin() { return fakeNode_.next_; }
   iterator end() { return &fakeNode_; }
+  const_iterator begin() const { return fakeNode_.next_; }
+  const_iterator end() const { return &fakeNode_; }
 
   // Capacity
 
-  bool empty() { return size() == 0; }
-
-  size_type size() { return size_; }
-
-  size_type max_size() { return size(); }
+  bool empty() const { return size() == 0; }
+  size_type size() const { return size_; }
+  size_type max_size() const { return node_traits::max_size(alloc_); }
 
   // Modifiers
   iterator insert(iterator pos, const_reference value) {
@@ -121,13 +153,21 @@ class list {
 
   template <typename... Args>
   void emplace_back(Args &&...value) {
-    InsertNodeBefore(end(), std::forward(value)...);
+    InsertNodeBefore(end(), std::forward<Args>(value)...);
   }
 
   void push_front(const_reference value) { InsertNodeBefore(begin(), value); }
 
   void push_front(value_type &&value) {
     InsertNodeBefore(begin(), std::move(value));
+  }
+
+  void swap(list &other) {
+    node_alloc alloc_tmp = alloc_;
+    alloc_ = other.alloc_;
+    other.alloc_ = alloc_tmp;
+    std::swap(size_, other.size_);
+    base_node::swap(fakeNode_, other.fakeNode_);
   }
 
  private:
@@ -141,22 +181,18 @@ class list {
   // value_type constructor.
   template <typename... Args>
   node_pointer CreateNode(Args &&...value) {
-    node_pointer temp = std::allocator_traits<node_alloc>::allocate(alloc_, 1);
-    std::allocator_traits<node_alloc>::construct(alloc_, temp,
-                                                 std::forward<Args>(value)...);
+    node_pointer temp = node_traits::allocate(alloc_, 1);
+    node_traits::construct(alloc_, temp, std::forward<Args>(value)...);
     return temp;
   }
-
-  // Receives the element before which the new one will be created and parameter
-  // pack for CreateNode
+  // Create and add node in the list before another node
+  // Receives the iterator on element before which the new one will be created
+  // and parameter pack for CreateNode
   template <typename... Args>
   void InsertNodeBefore(iterator pos, Args &&...value) {
     node_pointer new_node = CreateNode(std::forward<Args>(value)...);
     base_node_pointer node_from_pos = pos.GetNode();
-    new_node->next = node_from_pos;
-    new_node->prev = node_from_pos->prev;
-    new_node->prev->next = new_node;
-    node_from_pos->prev = new_node;
+    new_node->HookBefore(node_from_pos);
     ++size_;
   }
 };
