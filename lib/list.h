@@ -10,13 +10,13 @@ struct BaseListNode {
   BaseListNode() = default;
   BaseListNode(const BaseListNode &) = delete;
 
-  void HookBefore(BaseListNode *other) {
+  void HookBefore(BaseListNode *other) noexcept {
     next_ = other;
     prev_ = other->prev_;
     prev_->next_ = this;
     other->prev_ = this;
   }
-  void Unhook() {
+  void Unhook() noexcept {
     prev_->next_ = next_;
     next_->prev_ = prev_;
     prev_ = this;
@@ -53,11 +53,15 @@ struct ListIterator {
       typename std::conditional_t<isConst, const value_type &, value_type &>;
   using pointer =
       typename std::conditional_t<isConst, const value_type *, value_type *>;
-  using base_node = BaseListNode;
-  using node = ListNode<value_type>;
-  base_node *node_;
+  using base_node_pointer =
+      typename std::conditional_t<isConst, const BaseListNode *,
+                                  BaseListNode *>;
+  using node_pointer =
+      typename std::conditional_t<isConst, const ListNode<value_type> *,
+                                  ListNode<value_type> *>;
+  base_node_pointer node_;
 
-  ListIterator(base_node *node) : node_(node) {}
+  ListIterator(base_node_pointer node) : node_(node) {}
 
   ListIterator<T, isConst> &operator++() {
     node_ = node_->next_;
@@ -68,8 +72,10 @@ struct ListIterator {
     return *this;
   }
 
-  reference operator*() const { return static_cast<node *>(node_)->value_; }
-  base_node *GetNode() { return node_; }
+  reference operator*() const {
+    return static_cast<node_pointer>(node_)->value_;
+  }
+  base_node_pointer GetNode() const noexcept { return node_; }
   bool operator==(const ListIterator &other) const {
     return node_ == other.node_;
   }
@@ -97,24 +103,36 @@ class list {
   // Constructors
 
   list()
-      : node_alloc_(node_alloc()), val_alloc_(Allocator()), size_(0), fakeNode_({&fakeNode_, &fakeNode_}) {}
+      : node_alloc_(node_alloc()),
+        val_alloc_(Allocator()),
+        size_(0),
+        fakeNode_({&fakeNode_, &fakeNode_}) {}
 
   explicit list(size_type n, const Allocator &alloc = Allocator())
-      : node_alloc_(node_alloc()), val_alloc_(Allocator()), size_(0), fakeNode_({&fakeNode_, &fakeNode_}) {
+      : node_alloc_(node_alloc()),
+        val_alloc_(Allocator()),
+        size_(0),
+        fakeNode_({&fakeNode_, &fakeNode_}) {
     for (size_type i = 0; i < n; ++i) {
       emplace_back();
     }
   }
 
   list(const std::initializer_list<value_type> &items)
-      : node_alloc_(node_alloc()), val_alloc_(Allocator()), size_(0), fakeNode_({&fakeNode_, &fakeNode_}) {
+      : node_alloc_(node_alloc()),
+        val_alloc_(Allocator()),
+        size_(0),
+        fakeNode_({&fakeNode_, &fakeNode_}) {
     for (auto &element : items) {
       push_back(element);
     }
   }
 
   list(const list &)
-      : node_alloc_(node_alloc()), val_alloc_(Allocator()), size_(0), fakeNode_({&fakeNode_, &fakeNode_}) {
+      : node_alloc_(node_alloc()),
+        val_alloc_(Allocator()),
+        size_(0),
+        fakeNode_({&fakeNode_, &fakeNode_}) {
     // empty
   }
 
@@ -185,8 +203,15 @@ class list {
   template <typename... Args>
   node_pointer CreateNode(Args &&...value) {
     node_pointer temp = node_traits::allocate(node_alloc_, 1);
-    // node_traits::construct(node_alloc_, temp, std::forward<Args>(value)...);
-    value_traits::construct(val_alloc_, &(temp->value_), std::forward<Args>(value)...);
+    try {
+      // node_traits::construct(node_alloc_, temp,
+      // std::forward<Args>(value)...);
+      value_traits::construct(val_alloc_, &(temp->value_),
+                              std::forward<Args>(value)...);
+    } catch (...) {
+      node_traits::deallocate(node_alloc_, temp, 1);
+      throw;
+    }
     return temp;
   }
   // Create and add node in the list before another node

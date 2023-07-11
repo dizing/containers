@@ -30,11 +30,12 @@ class ListTest : public ::testing::Test {
 
   std::list<testClass> stdll = std::list<testClass>();
   list<testClass> ll = list<testClass>();
-  std::list<testClass> stdll_il = {{"first", "second"}, {"firstfirst", "secondsecond"}};
+  std::list<testClass> stdll_il = {{"first", "second"},
+                                   {"firstfirst", "secondsecond"}};
   list<testClass> ll_il = {{"first", "second"}, {"firstfirst", "secondsecond"}};
 
-  template<typename T>
-  static void check_with_std(const list<T> & ll, const std::list<T> & stdll) {
+  template <typename T>
+  static void check_with_std(const list<T>& ll, const std::list<T>& stdll) {
     EXPECT_EQ(ll.size(), stdll.size());
     auto ll_it = ll.begin();
     auto stdll_it = stdll.begin();
@@ -46,9 +47,7 @@ class ListTest : public ::testing::Test {
   }
 };
 
-TEST_F(ListTest, Constructors) {
-  check_with_std(ll_il, stdll_il);
-}
+TEST_F(ListTest, Constructors) { check_with_std(ll_il, stdll_il); }
 
 TEST_F(ListTest, OneElementModifiers) {
   EXPECT_EQ(ll.size(), stdll.size());
