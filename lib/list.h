@@ -226,4 +226,9 @@ class list {
   }
 };
 
+//Deduction guide for initializer list constructor
+//It depends on compiler, will it be created by default
+template<typename T>
+list(std::initializer_list<T>) -> list<T>;
+
 #endif  // CONTAINERS_LIB_LIST_H

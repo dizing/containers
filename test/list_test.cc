@@ -79,6 +79,4 @@ TEST_F(ListTest, size) {
   for (auto& i : ll) {
     std::cout << i.a << i.b << std::endl;
   }
-
-  // for(auto it = ll.begin(); it != )
 }
