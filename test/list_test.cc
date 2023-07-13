@@ -35,6 +35,9 @@ class ListTest : public ::testing::Test {
                                    {"firstfirst", "secondsecond"}};
   list<testClass> ll_il = {{"first", "second"}, {"firstfirst", "secondsecond"}};
 
+  const std::list<testClass> const_std_list = {{"a", "b"}, {"c", "d"}};
+  const list<testClass> const_list = {{"a", "b"}, {"c", "d"}};
+
   template <typename T>
   static void check_with_std(const list<T>& ll, const std::list<T>& stdll) {
     EXPECT_EQ(ll.size(), stdll.size());
@@ -48,7 +51,10 @@ class ListTest : public ::testing::Test {
   }
 };
 
-TEST_F(ListTest, Constructors) { check_with_std(ll_il, stdll_il); }
+TEST_F(ListTest, Constructors) { 
+  check_with_std(ll_il, stdll_il);
+  check_with_std(const_list, const_std_list); 
+  }
 
 TEST_F(ListTest, OneElementModifiers) {
   EXPECT_EQ(ll.size(), stdll.size());
@@ -79,6 +85,11 @@ TEST_F(ListTest, OneElementModifiers) {
   check_with_std(ll, stdll);
 }
 
+TEST_F(ListTest, ElementAccess) {
+  EXPECT_EQ(ll_il.front(), stdll_il.front());
+  EXPECT_EQ(ll_il.back(), stdll_il.back());
+}
+
 TEST_F(ListTest, swap) {
   list<testClass> list_for_swap = {{"1", "2"}, {"31", "23"}, {"12", "22"}};
   std::list<testClass> stdlist_for_swap = {{"1", "2"}, {"31", "23"}, {"12", "22"}};
@@ -91,13 +102,16 @@ TEST_F(ListTest, swap) {
 
   list_for_swap.swap(list_for_swap2);
   stdlist_for_swap.swap(stdlist_for_swap2);
+  list_for_swap.push_back(testClass("1", "2")); // check that all work accordingly
+  stdlist_for_swap.push_back(testClass("1", "2")); // check that all work accordingly
   check_with_std(list_for_swap, stdlist_for_swap);
   check_with_std(list_for_swap2, stdlist_for_swap2);
 
   list_for_swap.swap(list_for_swap3);
   stdlist_for_swap.swap(stdlist_for_swap3);
+  list_for_swap.push_back(testClass("1", "2")); // check that all work accordingly
+  stdlist_for_swap.push_back(testClass("1", "2")); // check that all work accordingly
   check_with_std(list_for_swap, stdlist_for_swap);
   check_with_std(list_for_swap3, stdlist_for_swap3);
-  
-  // tes.end()
 }
+
