@@ -60,6 +60,7 @@ TEST_F(ListTest, OneElementModifiers) {
   stdll.insert(stdll.begin(), testClass("they", "are"));
   stdll.emplace_back();
   stdll.emplace_back("323", "323");
+  stdll.erase(-- --stdll.end());
   ll.push_back(testClass("1", "2"));
   ll.push_back(name);
   ll.push_front(testClass("me", "me"));
@@ -67,6 +68,7 @@ TEST_F(ListTest, OneElementModifiers) {
   ll.insert(ll.begin(), testClass("they", "are"));
   ll.emplace_back();
   ll.emplace_back("323", "323");
+  ll.erase(-- --ll.end());
   check_with_std(ll, stdll);
 }
 
@@ -79,4 +81,5 @@ TEST_F(ListTest, size) {
   for (auto& i : ll) {
     std::cout << i.a << i.b << std::endl;
   }
+  // tes.end()
 }

@@ -163,6 +163,11 @@ class list {
     InsertNodeBefore(pos, std::move(value));
     return --pos;
   }
+  iterator erase(iterator pos) {
+    iterator res = iterator(pos.GetNode());
+    EraseNode(pos);
+    return res;
+  }
   void push_back(const_reference value) { InsertNodeBefore(end(), value); }
 
   void push_back(value_type &&value) {
@@ -214,6 +219,15 @@ class list {
     }
     return temp;
   }
+  // Remove node on pos from list.
+  // Destroy value_type field and deallocate node
+  void EraseNode(iterator pos) {
+    node_pointer node = static_cast<node_pointer>(pos.GetNode());
+    node->Unhook();
+    value_traits::destroy(val_alloc_, &(node->value_));
+    node_traits::deallocate(node_alloc_, node, 1);
+    --size_;
+  }
   // Create and add node in the list before another node
   // Receives the iterator on element before which the new one will be created
   // and parameter pack for CreateNode
@@ -226,9 +240,9 @@ class list {
   }
 };
 
-//Deduction guide for initializer list constructor
-//It depends on compiler, will it be created by default
-template<typename T>
+// Deduction guide for initializer list constructor
+// It depends on compiler, will it be created by default
+template <typename T>
 list(std::initializer_list<T>) -> list<T>;
 
 #endif  // CONTAINERS_LIB_LIST_H
