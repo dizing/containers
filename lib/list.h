@@ -136,6 +136,10 @@ class list {
     // empty
   }
 
+  ~list() {
+    clear();
+  }
+
   // Element Access
   const_reference front() const { return *begin(); }
 
@@ -164,10 +168,18 @@ class list {
     return --pos;
   }
   iterator erase(iterator pos) {
-    iterator res = iterator(pos.GetNode()->next_);
-    EraseNode(pos);
-    return res;
+    return erase(pos, iterator(pos.GetNode()->next_));
   }
+  iterator erase(iterator first, iterator last) {
+    iterator tmp = first;
+    while (first != last) {
+      tmp = iterator(first.GetNode()->next_);  // iterator++
+      EraseNode(first);
+      first = tmp;
+    }
+    return last;
+  }
+
   void push_back(const_reference value) { InsertNodeBefore(end(), value); }
 
   void push_back(value_type &&value) {
@@ -198,6 +210,8 @@ class list {
     std::swap(size_, other.size_);
     base_node::swap(fakeNode_, other.fakeNode_);
   }
+
+  void clear() { erase(begin(), end()); }
 
  private:
   node_alloc node_alloc_;

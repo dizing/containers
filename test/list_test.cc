@@ -43,7 +43,7 @@ class ListTest : public ::testing::Test {
     EXPECT_EQ(ll.size(), stdll.size());
     auto ll_it = ll.begin();
     auto stdll_it = stdll.begin();
-    while(ll_it != ll.end()) {
+    for (size_t i = 0; i < stdll.size(); ++i) {
       EXPECT_EQ(*ll_it, *stdll_it);
       ++ll_it;
       ++stdll_it;
@@ -51,10 +51,10 @@ class ListTest : public ::testing::Test {
   }
 };
 
-TEST_F(ListTest, Constructors) { 
+TEST_F(ListTest, Constructors) {
   check_with_std(ll_il, stdll_il);
-  check_with_std(const_list, const_std_list); 
-  }
+  check_with_std(const_list, const_std_list);
+}
 
 TEST_F(ListTest, OneElementModifiers) {
   EXPECT_EQ(ll.size(), stdll.size());
@@ -92,26 +92,49 @@ TEST_F(ListTest, ElementAccess) {
 
 TEST_F(ListTest, swap) {
   list<testClass> list_for_swap = {{"1", "2"}, {"31", "23"}, {"12", "22"}};
-  std::list<testClass> stdlist_for_swap = {{"1", "2"}, {"31", "23"}, {"12", "22"}};
+  std::list<testClass> stdlist_for_swap = {
+      {"1", "2"}, {"31", "23"}, {"12", "22"}};
 
   list<testClass> list_for_swap2 = {{"dasd", "sad"}, {"gdf", "asda"}};
   std::list<testClass> stdlist_for_swap2 = {{"dasd", "sad"}, {"gdf", "asda"}};
 
-  list<testClass> list_for_swap3; // empty
-  std::list<testClass> stdlist_for_swap3; // empty
+  list<testClass> list_for_swap3;          // empty
+  std::list<testClass> stdlist_for_swap3;  // empty
 
   list_for_swap.swap(list_for_swap2);
   stdlist_for_swap.swap(stdlist_for_swap2);
-  list_for_swap.push_back(testClass("1", "2")); // check that all work accordingly
-  stdlist_for_swap.push_back(testClass("1", "2")); // check that all work accordingly
+  list_for_swap.push_back(
+      testClass("1", "2"));  // check that all work accordingly
+  stdlist_for_swap.push_back(
+      testClass("1", "2"));  // check that all work accordingly
   check_with_std(list_for_swap, stdlist_for_swap);
   check_with_std(list_for_swap2, stdlist_for_swap2);
 
   list_for_swap.swap(list_for_swap3);
   stdlist_for_swap.swap(stdlist_for_swap3);
-  list_for_swap.push_back(testClass("1", "2")); // check that all work accordingly
-  stdlist_for_swap.push_back(testClass("1", "2")); // check that all work accordingly
+  list_for_swap.push_back(
+      testClass("1", "2"));  // check that all work accordingly
+  stdlist_for_swap.push_back(
+      testClass("1", "2"));  // check that all work accordingly
   check_with_std(list_for_swap, stdlist_for_swap);
   check_with_std(list_for_swap3, stdlist_for_swap3);
 }
 
+TEST_F(ListTest, EntireListModifiers) {
+  list<testClass> non_empty = {{"dasd", "sad"}, {"dasd", "sad"},
+                               {"gdf", "asda"}, {"dsd", "2323"},
+                               {"dasd", "sad"}, {"1", "2"}};
+  std::list<testClass> std_non_empty = {{"dasd", "sad"}, {"dasd", "sad"},
+                                        {"gdf", "asda"}, {"dsd", "2323"},
+                                        {"dasd", "sad"}, {"1", "2"}};
+  check_with_std(non_empty, std_non_empty);
+  auto res_erase =
+      non_empty.erase(++ ++non_empty.begin(), -- --non_empty.end());
+  auto res_std_erase =
+      std_non_empty.erase(++ ++std_non_empty.begin(), -- --std_non_empty.end());
+  check_with_std(non_empty, std_non_empty);
+  EXPECT_EQ(*res_erase, *res_std_erase);
+  non_empty.clear();
+  std_non_empty.clear();
+  check_with_std(non_empty, std_non_empty);
+}
