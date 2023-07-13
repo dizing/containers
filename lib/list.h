@@ -110,7 +110,7 @@ class list {
 
   explicit list(size_type n, const Allocator &alloc = Allocator())
       : node_alloc_(node_alloc()),
-        val_alloc_(Allocator()),
+        val_alloc_(alloc),
         size_(0),
         fakeNode_({&fakeNode_, &fakeNode_}) {
     for (size_type i = 0; i < n; ++i) {
@@ -123,22 +123,44 @@ class list {
         val_alloc_(Allocator()),
         size_(0),
         fakeNode_({&fakeNode_, &fakeNode_}) {
-    for (auto &element : items) {
-      push_back(element);
+    try {
+      for (auto &element : items) {
+        push_back(element);
+      }
+    } catch (...) {
+      clear();
+      throw;
     }
   }
 
-  list(const list &)
-      : node_alloc_(node_alloc()),
-        val_alloc_(Allocator()),
+  list(const list &other)
+      : node_alloc_(other.node_alloc_),
+        val_alloc_(other.val_alloc_),
         size_(0),
         fakeNode_({&fakeNode_, &fakeNode_}) {
-    // empty
+    try {
+      for (auto &element : other) {
+        push_back(element);
+      }
+    } catch (...) {
+      clear();
+      throw;
+    }
   }
 
-  ~list() {
-    clear();
+  list(list &&other)
+      : node_alloc_(std::move(other.node_alloc_)),
+        val_alloc_(std::move(other.val_alloc_)),
+        size_(other.size_),
+        fakeNode_({&fakeNode_, &fakeNode_}) {
+    if (other.size_ > 0) {
+      fakeNode_.HookBefore(&other.fakeNode_);
+      other.fakeNode_.Unhook();
+      other.size_ = 0;
+    }
   }
+
+  ~list() { clear(); }
 
   // Element Access
   const_reference front() const { return *begin(); }

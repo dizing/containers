@@ -54,6 +54,16 @@ class ListTest : public ::testing::Test {
 TEST_F(ListTest, Constructors) {
   check_with_std(ll_il, stdll_il);
   check_with_std(const_list, const_std_list);
+
+  list from_copy_constructor = ll_il;
+  std::list std_from_copy_constructor = stdll_il;
+  check_with_std(from_copy_constructor, std_from_copy_constructor);
+
+  list from_move_constructor = std::move(from_copy_constructor);
+  std::list std_from_move_constructor = std::move(std_from_copy_constructor);
+  check_with_std(from_move_constructor, std_from_move_constructor);
+  check_with_std(from_copy_constructor,
+                 std_from_copy_constructor);  // check that values stolen
 }
 
 TEST_F(ListTest, OneElementModifiers) {
@@ -85,11 +95,6 @@ TEST_F(ListTest, OneElementModifiers) {
   check_with_std(ll, stdll);
 }
 
-TEST_F(ListTest, ElementAccess) {
-  EXPECT_EQ(ll_il.front(), stdll_il.front());
-  EXPECT_EQ(ll_il.back(), stdll_il.back());
-}
-
 TEST_F(ListTest, swap) {
   list<testClass> list_for_swap = {{"1", "2"}, {"31", "23"}, {"12", "22"}};
   std::list<testClass> stdlist_for_swap = {
@@ -118,6 +123,20 @@ TEST_F(ListTest, swap) {
       testClass("1", "2"));  // check that all work accordingly
   check_with_std(list_for_swap, stdlist_for_swap);
   check_with_std(list_for_swap3, stdlist_for_swap3);
+}
+
+TEST_F(ListTest, ElementAccess) {
+  EXPECT_EQ(ll_il.back(), stdll_il.back());
+  EXPECT_EQ(ll_il.front(), stdll_il.front());
+
+  EXPECT_EQ(const_list.back(), const_std_list.back());
+  EXPECT_EQ(const_list.front(), const_std_list.front());
+  EXPECT_EQ(
+      std::is_const_v<std::remove_reference_t<decltype(const_list.back())>>,
+      true);
+  EXPECT_EQ(
+      std::is_const_v<std::remove_reference_t<decltype(const_list.front())>>,
+      true);
 }
 
 TEST_F(ListTest, EntireListModifiers) {
