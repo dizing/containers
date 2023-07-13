@@ -6,7 +6,8 @@
 struct testClass {
   std::string a;
   std::string b;
-  testClass() : a(""), b("") { std::cout << "baseConstuctor" << std::endl; }
+  testClass() : a(""), b("") {  // std::cout << "baseConstuctor" << std::endl;
+  }
 
   testClass(const std::string& a, const std::string& b) : a(a), b(b) {
     // std::cout << "usualConstuctor" << std::endl;
@@ -39,7 +40,7 @@ class ListTest : public ::testing::Test {
     EXPECT_EQ(ll.size(), stdll.size());
     auto ll_it = ll.begin();
     auto stdll_it = stdll.begin();
-    for (std::size_t i = 0; i < ll.size(); ++i) {
+    while(ll_it != ll.end()) {
       EXPECT_EQ(*ll_it, *stdll_it);
       ++ll_it;
       ++stdll_it;
@@ -56,30 +57,47 @@ TEST_F(ListTest, OneElementModifiers) {
   stdll.push_back(testClass("1", "2"));
   stdll.push_back(name);
   stdll.push_front(testClass("me", "me"));
+  stdll.push_front(name);
+  stdll.pop_back();
   stdll.insert(++ ++stdll.begin(), testClass("you", "you"));
   stdll.insert(stdll.begin(), testClass("they", "are"));
+  stdll.pop_front();
   stdll.emplace_back();
   stdll.emplace_back("323", "323");
   stdll.erase(-- --stdll.end());
   ll.push_back(testClass("1", "2"));
   ll.push_back(name);
   ll.push_front(testClass("me", "me"));
+  ll.push_front(name);
+  ll.pop_back();
   ll.insert(++ ++ll.begin(), testClass("you", "you"));
   ll.insert(ll.begin(), testClass("they", "are"));
+  ll.pop_front();
   ll.emplace_back();
   ll.emplace_back("323", "323");
   ll.erase(-- --ll.end());
   check_with_std(ll, stdll);
 }
 
-TEST_F(ListTest, size) {
-  std::cout << ll.max_size() << std::endl << stdll.max_size() << std::endl;
-  list<testClass> ll_for_swap;  // = {{"1", "2"}, {"3", "4"}};
-  ll_for_swap.push_back(testClass("12", "12"));
-  ll.swap(ll_for_swap);
-  // std::swap(ll, ll_for_swap);
-  for (auto& i : ll) {
-    std::cout << i.a << i.b << std::endl;
-  }
+TEST_F(ListTest, swap) {
+  list<testClass> list_for_swap = {{"1", "2"}, {"31", "23"}, {"12", "22"}};
+  std::list<testClass> stdlist_for_swap = {{"1", "2"}, {"31", "23"}, {"12", "22"}};
+
+  list<testClass> list_for_swap2 = {{"dasd", "sad"}, {"gdf", "asda"}};
+  std::list<testClass> stdlist_for_swap2 = {{"dasd", "sad"}, {"gdf", "asda"}};
+
+  list<testClass> list_for_swap3; // empty
+  std::list<testClass> stdlist_for_swap3; // empty
+
+  list_for_swap.swap(list_for_swap2);
+  stdlist_for_swap.swap(stdlist_for_swap2);
+  check_with_std(list_for_swap, stdlist_for_swap);
+  check_with_std(list_for_swap2, stdlist_for_swap2);
+
+  list_for_swap.swap(list_for_swap3);
+  stdlist_for_swap.swap(stdlist_for_swap3);
+  check_with_std(list_for_swap, stdlist_for_swap);
+  check_with_std(list_for_swap3, stdlist_for_swap3);
+  
   // tes.end()
 }

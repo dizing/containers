@@ -40,10 +40,10 @@ template <typename T>
 struct ListNode : public BaseListNode {
   T value_;
 
-  ListNode(const T &value) : value_(value) {}
-  ListNode(T &&value) : value_(std::move(value)) {}
-  template <typename... Args>
-  ListNode(Args &&...value) : value_(T(std::forward<Args>(value)...)) {}
+  // ListNode(const T &value) : value_(value) {}
+  // ListNode(T &&value) : value_(std::move(value)) {}
+  // template <typename... Args>
+  // ListNode(Args &&...value) : value_(T(std::forward<Args>(value)...)) {}
 };
 
 template <typename T, bool isConst>
@@ -164,7 +164,7 @@ class list {
     return --pos;
   }
   iterator erase(iterator pos) {
-    iterator res = iterator(pos.GetNode());
+    iterator res = iterator(pos.GetNode()->next_);
     EraseNode(pos);
     return res;
   }
@@ -173,6 +173,8 @@ class list {
   void push_back(value_type &&value) {
     InsertNodeBefore(end(), std::move(value));
   }
+
+  void pop_back() { EraseNode(--end()); }
 
   template <typename... Args>
   void emplace_back(Args &&...value) {
@@ -184,6 +186,8 @@ class list {
   void push_front(value_type &&value) {
     InsertNodeBefore(begin(), std::move(value));
   }
+
+  void pop_front() { EraseNode(begin()); }
 
   void swap(list &other) {
     // node_alloc node_alloc_tmp = node_alloc_;
