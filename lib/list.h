@@ -67,9 +67,19 @@ struct ListIterator {
     node_ = node_->next_;
     return *this;
   }
+  ListIterator<T, isConst> operator++(int) {
+    ListIterator<T, isConst> temp(*this);
+    ++(*this);
+    return temp;
+  }
   ListIterator<T, isConst> &operator--() {
     node_ = node_->prev_;
     return *this;
+  }
+  ListIterator<T, isConst> operator--(int) {
+    ListIterator<T, isConst> temp(*this);
+    --(*this);
+    return temp;
   }
 
   reference operator*() const {
@@ -193,11 +203,8 @@ class list {
     return erase(pos, iterator(pos.GetNode()->next_));
   }
   iterator erase(iterator first, iterator last) {
-    iterator tmp = first;
     while (first != last) {
-      tmp = iterator(first.GetNode()->next_);  // iterator++
-      EraseNode(first);
-      first = tmp;
+      EraseNode(first++);
     }
     return last;
   }
