@@ -47,7 +47,8 @@ struct ListNode : public BaseListNode {
 };
 
 template <typename T, bool isConst>
-struct ListIterator {
+class ListIterator {
+ public:
   using value_type = T;
   using reference =
       typename std::conditional_t<isConst, const value_type &, value_type &>;
@@ -59,9 +60,22 @@ struct ListIterator {
   using node_pointer =
       typename std::conditional_t<isConst, const ListNode<value_type> *,
                                   ListNode<value_type> *>;
+
   base_node_pointer node_;
 
   ListIterator(base_node_pointer node) : node_(node) {}
+
+  ListIterator(const ListIterator &other) : node_(other.node_) {
+    // std::cout << "just copy" << std::endl;
+  }
+  // Non const to const
+  template <
+      bool otherIsConst,
+      std::enable_if_t<isConst == true && otherIsConst == false, bool> = true>
+  ListIterator(const ListIterator<T, otherIsConst> &other)
+      : node_(other.node_) {
+    // std::cout << "non const to const" << std::endl;
+  }
 
   ListIterator<T, isConst> &operator++() {
     node_ = node_->next_;
@@ -104,11 +118,8 @@ class list {
   using base_node = BaseListNode;
   using node = ListNode<value_type>;
   using value_traits = std::allocator_traits<Allocator>;
-  using node_alloc = typename value_traits::rebind_alloc<
-      node>;  // typename Allocator::rebind<node>::other;
+  using node_alloc = typename value_traits::rebind_alloc<node>;
   using node_traits = typename value_traits::rebind_traits<node>;
-  using node_pointer = node *;
-  using base_node_pointer = base_node *;
 
   // Constructors
 
@@ -191,22 +202,22 @@ class list {
   size_type max_size() const { return node_traits::max_size(node_alloc_); }
 
   // Modifiers
-  iterator insert(iterator pos, const_reference value) {
-    InsertNodeBefore(pos, value);
-    return --pos;
+  iterator insert(const_iterator pos, const_reference value) {
+    InsertNodeBefore(IteratorConstCast(pos), value);
+    return --IteratorConstCast(pos);
   };
-  iterator insert(iterator pos, value_type &&value) {
-    InsertNodeBefore(pos, std::move(value));
-    return --pos;
+  iterator insert(const_iterator pos, value_type &&value) {
+    InsertNodeBefore(IteratorConstCast(pos), std::move(value));
+    return --IteratorConstCast(pos);
   }
-  iterator erase(iterator pos) {
-    return erase(pos, iterator(pos.GetNode()->next_));
+  iterator erase(const_iterator pos) {
+    return erase(pos, const_iterator(pos.GetNode()->next_));
   }
-  iterator erase(iterator first, iterator last) {
+  iterator erase(const_iterator first, const_iterator last) {
     while (first != last) {
-      EraseNode(first++);
+      EraseNode(IteratorConstCast(first++));
     }
-    return last;
+    return IteratorConstCast(last);
   }
 
   void push_back(const_reference value) { InsertNodeBefore(end(), value); }
@@ -243,6 +254,9 @@ class list {
   void clear() { erase(begin(), end()); }
 
  private:
+  using node_pointer = node *;
+  using base_node_pointer = base_node *;
+
   node_alloc node_alloc_;
   Allocator val_alloc_;
   size_type size_;
@@ -284,6 +298,13 @@ class list {
     base_node_pointer node_from_pos = pos.GetNode();
     new_node->HookBefore(node_from_pos);
     ++size_;
+  }
+
+  // Const cast from const iterator to non-const iterator
+  iterator IteratorConstCast(const_iterator pos) const {
+    iterator temp(
+        const_cast<typename iterator::base_node_pointer>(pos.GetNode()));
+    return temp;
   }
 };
 
