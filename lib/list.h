@@ -65,17 +65,14 @@ class ListIterator {
 
   ListIterator(base_node_pointer node) : node_(node) {}
 
-  ListIterator(const ListIterator &other) : node_(other.node_) {
-    // std::cout << "just copy" << std::endl;
-  }
+  ListIterator(const ListIterator &other) : node_(other.node_) {}
+
   // Non const to const
   template <
       bool otherIsConst,
       std::enable_if_t<isConst == true && otherIsConst == false, bool> = true>
   ListIterator(const ListIterator<T, otherIsConst> &other)
-      : node_(other.node_) {
-    // std::cout << "non const to const" << std::endl;
-  }
+      : node_(other.node_) {}
 
   ListIterator<T, isConst> &operator++() {
     node_ = node_->next_;
@@ -183,20 +180,30 @@ class list {
 
   ~list() { clear(); }
 
+  list &operator=(const list &l) {
+    if (this != &l) {
+      list(l).swap(*this);
+    }
+    return *this;
+  }
+
+  list &operator=(list &&l) {
+    list temp(std::move(l));
+    swap(temp);
+    return *this;
+  }
+
   // Element Access
   const_reference front() const { return *begin(); }
-
   const_reference back() const { return *(--end()); }
 
   // Iterators
-
   iterator begin() { return fakeNode_.next_; }
   iterator end() { return &fakeNode_; }
   const_iterator begin() const { return fakeNode_.next_; }
   const_iterator end() const { return &fakeNode_; }
 
   // Capacity
-
   bool empty() const { return size() == 0; }
   size_type size() const { return size_; }
   size_type max_size() const { return node_traits::max_size(node_alloc_); }
@@ -205,7 +212,7 @@ class list {
   iterator insert(const_iterator pos, const_reference value) {
     InsertNodeBefore(IteratorConstCast(pos), value);
     return --IteratorConstCast(pos);
-  };
+  }
   iterator insert(const_iterator pos, value_type &&value) {
     InsertNodeBefore(IteratorConstCast(pos), std::move(value));
     return --IteratorConstCast(pos);
@@ -249,6 +256,54 @@ class list {
     std::swap(val_alloc_, other.val_alloc_);
     std::swap(size_, other.size_);
     base_node::swap(fakeNode_, other.fakeNode_);
+  }
+
+  void merge(list &other) { merge(std::move(other)); }
+
+  void merge(list &&other) {
+    auto comparator = [](const T &a, const T &b) -> bool { return a < b; };
+    merge<decltype(comparator)>(std::move(other), comparator);
+  }
+
+  template <class Compare>
+  void merge(list &other, Compare comp) {
+    merge<Compare>(std::move(other), comp);
+  }
+
+  template <class Compare>
+  void merge(list &&other, Compare comp) {
+    if (&other == this) {
+      return;
+    }
+    iterator first = begin();
+    iterator second = other.begin();
+    while (first != end() && second != other.end()) {
+      if (comp(*second, *first)) {
+        TransferNodeBefore(first.GetNode(), second++);
+        ++size_;
+        --other.size_;
+      } else {
+        ++first;
+      }
+    }
+    while (second != other.end()) {
+      TransferNodeBefore(first.GetNode()->next_, second++);
+      ++size_;
+      --other.size_;
+    }
+  }
+
+  void reverse() {
+    iterator it = begin();
+    while (it != end()) {
+      base_node_pointer node = (it++).GetNode();
+      base_node_pointer tmp = node->next_;
+      node->next_ = node->prev_;
+      node->prev_ = tmp;
+    }
+    base_node_pointer tmp = fakeNode_.next_;
+    fakeNode_.next_ = fakeNode_.prev_;
+    fakeNode_.prev_ = tmp;
   }
 
   void clear() { erase(begin(), end()); }
@@ -298,6 +353,12 @@ class list {
     base_node_pointer node_from_pos = pos.GetNode();
     new_node->HookBefore(node_from_pos);
     ++size_;
+  }
+  // Unhook node and place it before pos
+  void TransferNodeBefore(iterator pos, iterator node_for_steal) {
+    base_node_pointer tmp = node_for_steal.GetNode();
+    tmp->Unhook();
+    tmp->HookBefore(pos.GetNode());
   }
 
   // Const cast from const iterator to non-const iterator

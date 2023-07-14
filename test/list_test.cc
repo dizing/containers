@@ -23,6 +23,11 @@ struct testClass {
   bool operator==(const testClass& other) const {
     return other.a == a && other.b == b;
   }
+  testClass& operator=(const testClass& other) {
+    a = other.a;
+    b = other.b;
+    return *this;
+  }
 };
 
 class ListTest : public ::testing::Test {
@@ -64,6 +69,16 @@ TEST_F(ListTest, Constructors) {
   check_with_std(from_move_constructor, std_from_move_constructor);
   check_with_std(from_copy_constructor,
                  std_from_copy_constructor);  // check that values stolen
+
+  list<testClass> assign = {{"12", "12"}};
+  std::list<testClass> std_assign = {{"12", "12"}};
+
+  assign = ll_il;
+  std_assign = stdll_il;
+  check_with_std(assign, std_assign);
+  assign = list<testClass>({{"12", "12"}, {"22", "22"}});
+  std_assign = std::list<testClass>({{"12", "12"}, {"22", "22"}});
+  check_with_std(assign, std_assign);
 }
 
 TEST_F(ListTest, OneElementModifiers) {
@@ -147,6 +162,9 @@ TEST_F(ListTest, EntireListModifiers) {
                                         {"gdf", "asda"}, {"dsd", "2323"},
                                         {"dasd", "sad"}, {"1", "2"}};
   check_with_std(non_empty, std_non_empty);
+  non_empty.reverse();
+  std_non_empty.reverse();
+  check_with_std(non_empty, std_non_empty);
   auto res_erase =
       non_empty.erase(++ ++non_empty.begin(), -- --non_empty.end());
   auto res_std_erase =
@@ -156,4 +174,19 @@ TEST_F(ListTest, EntireListModifiers) {
   non_empty.clear();
   std_non_empty.clear();
   check_with_std(non_empty, std_non_empty);
+}
+
+TEST_F(ListTest, Ordering) {
+  list<int> int_list = {1, 3, 3, 5, 7, 11, 1337};
+  std::list<int> std_int_list = {1, 3, 3, 5, 7, 11, 1337};
+  list<int> int_list2 = {2, 4, 8, 16, 32, 32, 64, 128, 1024};
+  std::list<int> std_int_list2 = {2, 4, 8, 16, 32, 32, 64, 128, 1024};
+  check_with_std(int_list, std_int_list);
+  check_with_std(int_list2, std_int_list2);
+
+  int_list.merge(int_list2);
+  std_int_list.merge(std_int_list2);
+
+  check_with_std(int_list, std_int_list);
+  check_with_std(int_list2, std_int_list2);
 }
