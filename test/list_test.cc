@@ -29,6 +29,10 @@ struct testClass {
     return *this;
   }
 };
+std::ostream& operator<<(std::ostream& stream, const testClass& test_obj) {
+  std::cout << test_obj.a << " " << test_obj.b << std::endl;
+  return stream;
+}
 
 class ListTest : public ::testing::Test {
  protected:
@@ -161,16 +165,28 @@ TEST_F(ListTest, EntireListModifiers) {
   std::list<testClass> std_non_empty = {{"dasd", "sad"}, {"dasd", "sad"},
                                         {"gdf", "asda"}, {"dsd", "2323"},
                                         {"dasd", "sad"}, {"1", "2"}};
+  list<testClass> for_splice = {{"8", "6"}, {"4", "5"}, {"1", "2"},
+                                {"3", "2"}, {"0", "0"}, {"1", "2"}};
+  std::list<testClass> std_for_splice = {{"8", "6"}, {"4", "5"}, {"1", "2"},
+                                         {"3", "2"}, {"0", "0"}, {"1", "2"}};
   check_with_std(non_empty, std_non_empty);
+  // SPLICE
+  non_empty.splice(non_empty.begin(), for_splice);
+  std_non_empty.splice(std_non_empty.begin(), std_for_splice);
+  check_with_std(non_empty, std_non_empty);
+  check_with_std(for_splice, std_for_splice);
+  // REVERSE
   non_empty.reverse();
   std_non_empty.reverse();
   check_with_std(non_empty, std_non_empty);
+  // ERASE
   auto res_erase =
       non_empty.erase(++ ++non_empty.begin(), -- --non_empty.end());
   auto res_std_erase =
       std_non_empty.erase(++ ++std_non_empty.begin(), -- --std_non_empty.end());
   check_with_std(non_empty, std_non_empty);
   EXPECT_EQ(*res_erase, *res_std_erase);
+  // CLEAR
   non_empty.clear();
   std_non_empty.clear();
   check_with_std(non_empty, std_non_empty);

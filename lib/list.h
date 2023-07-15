@@ -269,7 +269,9 @@ class list {
   void merge(list &other, Compare comp) {
     merge<Compare>(std::move(other), comp);
   }
-
+  // Merge two lists.
+  // No elements are copied
+  // Basic exception safety(not all other list elements will be merged)
   template <class Compare>
   void merge(list &&other, Compare comp) {
     if (&other == this) {
@@ -291,6 +293,23 @@ class list {
       ++size_;
       --other.size_;
     }
+  }
+
+  void splice(const_iterator pos, list &other) {
+    splice(pos, std::move(other));
+  }
+
+  void splice(const_iterator pos, list &&other) {
+    base_node_pointer pos_node = (IteratorConstCast(pos).GetNode());
+    base_node_pointer other_first_node = other.begin().GetNode();
+    base_node_pointer other_last_node = (--other.end()).GetNode();
+    other_first_node->prev_ = pos_node->prev_;
+    pos_node->prev_->next_ = other_first_node;
+    other_last_node->next_ = pos_node;
+    pos_node->prev_ = other_last_node;
+    size_ += other.size_;
+    other.fakeNode_ = {&other.fakeNode_, &other.fakeNode_};
+    other.size_ = 0;
   }
 
   void reverse() {
