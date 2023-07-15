@@ -1,8 +1,8 @@
 #if !defined(CONTAINERS_LIB_LIST_H)
 #define CONTAINERS_LIB_LIST_H
 
+#include <iostream>
 #include <memory>
-
 struct BaseListNode {
   BaseListNode *prev_;
   BaseListNode *next_;
@@ -92,7 +92,10 @@ class ListIterator {
     --(*this);
     return temp;
   }
-
+  ListIterator &operator=(const ListIterator &other) {
+    node_ = other.node_;
+    return *this;
+  }
   reference operator*() const {
     return static_cast<node_pointer>(node_)->value_;
   }
@@ -327,6 +330,34 @@ class list {
 
   void clear() { erase(begin(), end()); }
 
+  void sort() {
+    auto comparator = [](const T &a, const T &b) -> bool { return a < b; };
+    sort<decltype(comparator)>(comparator);
+  }
+
+  // Sorting by selection sort O(n^2)
+  template <typename Compare>
+  void sort(Compare comp) {
+    SelectionSort<Compare>(comp);
+  }
+
+  void unique() {
+    auto predicate = [](const T &a, const T &b) -> bool { return a == b; };
+    unique<decltype(predicate)>(predicate);
+  }
+
+  template <class BinaryPredicate>
+  void unique(BinaryPredicate p) {
+    iterator first = begin();
+    iterator second = ++begin();
+    while (second != end())
+      if (p(*first, *second)) {
+        EraseNode(second++);
+      } else {
+        first = second++;
+      }
+  }
+
  private:
   using node_pointer = node *;
   using base_node_pointer = base_node *;
@@ -385,6 +416,21 @@ class list {
     iterator temp(
         const_cast<typename iterator::base_node_pointer>(pos.GetNode()));
     return temp;
+  }
+
+  template <class Compare>
+  void SelectionSort(Compare comp) {
+    list temp;
+    while (size_ > 0) {
+      iterator min_element(begin());
+      for (auto it = begin(); it != end(); ++it) {
+        min_element = (comp(*it, *min_element)) ? it : min_element;
+      }
+      temp.TransferNodeBefore(temp.end(), min_element);
+      --size_;
+      ++temp.size_;
+    }
+    swap(temp);
   }
 };
 

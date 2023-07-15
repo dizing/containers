@@ -166,15 +166,19 @@ TEST_F(ListTest, EntireListModifiers) {
                                         {"gdf", "asda"}, {"dsd", "2323"},
                                         {"dasd", "sad"}, {"1", "2"}};
   list<testClass> for_splice = {{"8", "6"}, {"4", "5"}, {"1", "2"},
-                                {"3", "2"}, {"0", "0"}, {"1", "2"}};
+                                {"0", "0"}, {"0", "0"}, {"0", "0"}};
   std::list<testClass> std_for_splice = {{"8", "6"}, {"4", "5"}, {"1", "2"},
-                                         {"3", "2"}, {"0", "0"}, {"1", "2"}};
+                                         {"0", "0"}, {"0", "0"}, {"0", "0"}};
   check_with_std(non_empty, std_non_empty);
   // SPLICE
   non_empty.splice(non_empty.begin(), for_splice);
   std_non_empty.splice(std_non_empty.begin(), std_for_splice);
   check_with_std(non_empty, std_non_empty);
   check_with_std(for_splice, std_for_splice);
+  // UNIQUE
+  non_empty.unique();
+  std_non_empty.unique();
+  check_with_std(non_empty, std_non_empty);
   // REVERSE
   non_empty.reverse();
   std_non_empty.reverse();
@@ -199,10 +203,19 @@ TEST_F(ListTest, Ordering) {
   std::list<int> std_int_list2 = {2, 4, 8, 16, 32, 32, 64, 128, 1024};
   check_with_std(int_list, std_int_list);
   check_with_std(int_list2, std_int_list2);
-
+  // MERGE
   int_list.merge(int_list2);
   std_int_list.merge(std_int_list2);
-
   check_with_std(int_list, std_int_list);
   check_with_std(int_list2, std_int_list2);
+
+  list<int> int_list3 = {32, 23,   24, 214, 23, 4523, 512, 34,  1232, 12, 31,
+                         4,  3456, 45, 523, 34, 23,   421, 534, 63,   453};
+  std::list<int> std_int_list3 = {32,  23,   24, 214, 23,  4523, 512,
+                                  34,  1232, 12, 31,  4,   3456, 45,
+                                  523, 34,   23, 421, 534, 63,   453};
+  // SORT
+  int_list3.sort();
+  std_int_list3.sort();
+  check_with_std(int_list3, std_int_list3);
 }
