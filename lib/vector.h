@@ -18,6 +18,15 @@ class vector {
 
   vector() : data_(nullptr), capacity_(0), size_(0), alloc_(Allocator()) {}
 
+  vector(const vector &)
+      : data_(nullptr), capacity_(0), size_(0), alloc_(Allocator()) {
+    // TODO
+  }
+  vector &operator=(const vector &) {
+    // TODO
+    return *this;
+  }
+
   void reserve(size_type new_capacity) {
     if (new_capacity > capacity_) {
       pointer new_data = alloc_traits::allocate(alloc_, new_capacity);
@@ -32,20 +41,52 @@ class vector {
           throw;
         }
       }
-      for (size_type i = 0; i < size_; ++i) {
-        alloc_traits::destroy(alloc_, data_ + i);
+      if (data_ != nullptr) {
+        for (size_type i = 0; i < size_; ++i) {
+          alloc_traits::destroy(alloc_, data_ + i);
+        }
+        alloc_traits::deallocate(alloc_, data_, capacity_);
       }
-      alloc_traits::deallocate(alloc_, data_, capacity_);
       data_ = new_data;
       capacity_ = new_capacity;
     }
   }
+
+  void push_back(T &&value) {
+    AutomaticReserveLogic();
+    CreateElement(&data_[size_], std::move(value));
+    ++size_;
+  }
+
+  void push_back(const T &value);
+
+  iterator begin() { return data_; }
+  const_iterator begin() const { return data_; };
+  iterator end() { return data_ + size_; }
+  const_iterator end() const { return data_ + size_; };
+
+  size_type capacity() const { return capacity_; }
+  size_type size() const { return size_; }
 
  private:
   pointer data_;
   size_type capacity_;
   size_type size_;
   Allocator alloc_;
+  template <typename... Args>
+  void CreateElement(pointer pos, Args &&...value) {
+    alloc_traits::construct(alloc_, pos, std::forward<Args>(value)...);
+  }
+
+  void AutomaticReserveLogic() {
+    if (size_ >= capacity_) {
+      if (capacity_ == 0) {
+        reserve(1);
+      } else {
+        reserve(capacity_ * 2);
+      }
+    }
+  }
 };
 
 #endif  // CONTAINERS_LIB_VECTOR_H
