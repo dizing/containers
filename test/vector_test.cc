@@ -27,7 +27,15 @@ TEST_F(VectorTest, test) {
   std::vector<int> std_vec;
   vec.push_back(3);
   vec.push_back(2);
+  vec.push_back(2);
+  vec.push_back(2);
+  vec.push_back(2);
+  vec.shrink_to_fit();
   std_vec.push_back(3);
   std_vec.push_back(2);
+  std_vec.push_back(2);
+  std_vec.push_back(2);
+  std_vec.push_back(2);
+  std_vec.shrink_to_fit();
   check_with_std(vec, std_vec);
 }
