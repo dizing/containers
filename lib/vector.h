@@ -1,6 +1,7 @@
 #if !defined(CONTAINERS_LIB_VECTOR_H)
 #define CONTAINERS_LIB_VECTOR_H
 
+#include <iterator>
 #include <memory>
 
 template <typename T, typename Allocator = std::allocator<T>>
@@ -18,10 +19,21 @@ class vector {
 
   vector() : data_(nullptr), capacity_(0), size_(0), alloc_(Allocator()) {}
 
-  vector(const vector &)
-      : data_(nullptr), capacity_(0), size_(0), alloc_(Allocator()) {
-    // TODO
+  template <typename Iter>
+  vector(Iter beg, Iter end) : vector() {
+    size_type input_size = static_cast<size_type>(std::distance(beg, end));
+    reserve(input_size);
+    size_ = input_size;
+    for (size_type i = 0; i < input_size; ++i) {
+      CreateElement(&data_[i], *beg);
+      ++beg;
+    }
   }
+
+  vector(std::initializer_list<value_type> const &items)
+      : vector(items.begin(), items.end()) {}
+
+  vector(const vector &other) : vector(other.begin(), other.end()) {}
 
   vector &operator=(const vector &) {
     // TODO
@@ -34,7 +46,11 @@ class vector {
     ++size_;
   }
 
-  void push_back(const T &value);
+  void push_back(const T &value) {
+    AutomaticReserveLogic();
+    CreateElement(&data_[size_], value);
+    ++size_;
+  };
 
   iterator begin() { return data_; }
 
@@ -118,5 +134,10 @@ class vector {
     }
   }
 };
+
+// Deduction guide for iterators constructor
+template <typename Iter>
+vector(Iter beg, Iter end)
+    -> vector<typename std::iterator_traits<Iter>::value_type>;
 
 #endif  // CONTAINERS_LIB_VECTOR_H

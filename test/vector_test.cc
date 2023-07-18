@@ -1,3 +1,4 @@
+#include <initializer_list>
 #include <vector>
 
 #include "containers.h"
@@ -23,6 +24,7 @@ class VectorTest : public ::testing::Test {
 };
 
 TEST_F(VectorTest, test) {
+  std::initializer_list list = {1, 2, 3, 4, 5};
   vector<int> vec;
   std::vector<int> std_vec;
   vec.push_back(3);
@@ -38,4 +40,17 @@ TEST_F(VectorTest, test) {
   std_vec.push_back(2);
   std_vec.shrink_to_fit();
   check_with_std(vec, std_vec);
+
+  vector vec_from_list(list.begin(), list.end());
+  std::vector std_vec_from_list(list.begin(), list.end());
+  check_with_std(vec_from_list, std_vec_from_list);
+  vector<double> vec_from_rvalue_list = {2,   32, 243, 4, 2345,  23,
+                                         423, 4,  23,  5, 345.34};
+  std::vector<double> std_from_rvalue_list = {2,   32, 243, 4, 2345,  23,
+                                              423, 4,  23,  5, 345.34};
+  check_with_std(vec_from_rvalue_list, std_from_rvalue_list);
+
+  vector vec_copy_constructor(vec_from_rvalue_list);
+  std::vector std_vec_copy_constructor(std_from_rvalue_list);
+  check_with_std(vec_copy_constructor, std_vec_copy_constructor);
 }
