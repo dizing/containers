@@ -35,9 +35,7 @@ class vector {
 
   vector(const vector &other) : vector(other.begin(), other.end()) {}
 
-  ~vector() {
-    freeDataArray(data_, capacity_, size_);
-  }
+  ~vector() { freeDataArray(data_, capacity_, size_); }
 
   vector &operator=(const vector &other) {
     if (this != &other) {
@@ -65,6 +63,56 @@ class vector {
     ++size_;
   };
 
+  iterator insert(iterator pos, const_reference value) {
+    AutomaticReserveLogic();
+    alloc_traits::construct(alloc_, data_ + size_);
+    for(iterator i = end(); i > pos; --i) {
+      *i = *(i - 1);
+    }
+    CreateElement(pos, value);
+    ++size_;
+    return pos;
+  }
+
+  void erase(iterator pos) {
+    // alloc_traits::destroy(alloc_, pos);
+    for(iterator i = pos; i < end() - 1; ++i) {
+      *i = *(i + 1);
+    }
+    --size_;
+  }
+
+  void clear() {
+    if (data_ != nullptr) {
+      for (size_type i = 0; i < size_; ++i) {
+        alloc_traits::destroy(alloc_, data_ + i);
+      }
+    }
+    size_ = 0;
+  }
+
+  // ELEMENT ACCESS
+  reference at(size_type pos) {
+    if (!(pos < size_)) {
+      throw std::out_of_range(std::to_string(pos) + "not less then" +
+                              std::to_string(size_));
+    }
+    return data_[pos];
+  }
+  const_reference at(size_type pos) const {
+    if (!(pos < size_)) {
+      throw std::out_of_range(std::to_string(pos) + "not less then" +
+                              std::to_string(size_));
+    }
+    return data_[pos];
+  }
+  reference operator[](size_type pos) { return data_[pos]; }
+  const_reference operator[](size_type pos) const { return data_[pos]; }
+  const_reference front() const { return data_[0]; }
+  const_reference back() const { return data_[size_ - 1]; }
+  pointer data() { return data_; }
+
+  // ITERATORS
   iterator begin() { return data_; }
 
   const_iterator begin() const { return data_; };
@@ -121,18 +169,28 @@ class vector {
                              size_type element_recreating_count,
                              pointer data_for_moving) {
     pointer new_data = alloc_traits::allocate(alloc_, new_capacity);
-    for (size_type i = 0; i < element_recreating_count; ++i) {
+    try {
+      ConstructElementsFromAnotherData(0, element_recreating_count,
+                                       data_for_moving, new_data);
+    } catch (...) {
+      alloc_traits::deallocate(alloc_, new_data, new_capacity);
+      throw;
+    }
+    return new_data;
+  }
+
+  void ConstructElementsFromAnotherData(size_type start_pos, size_type count,
+                                        pointer data_from, pointer data_to) {
+    for (size_type i = start_pos; i < count; ++i) {
       try {
-        alloc_traits::construct(alloc_, new_data + i, data_for_moving[i]);
+        alloc_traits::construct(alloc_, data_to + i, data_from[i]);
       } catch (...) {
         for (size_type j = 0; j < i; ++j) {
-          alloc_traits::destroy(alloc_, new_data + j);
+          alloc_traits::destroy(alloc_, data_to + j);
         }
-        alloc_traits::deallocate(alloc_, new_data, new_capacity);
         throw;
       }
     }
-    return new_data;
   }
 
   void freeDataArray(pointer data_array, size_type capacity, size_type size) {

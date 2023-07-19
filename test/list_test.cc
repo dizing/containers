@@ -2,37 +2,7 @@
 
 #include "containers.h"
 #include "gtest/gtest.h"
-
-struct testClass {
-  std::string a;
-  std::string b;
-  testClass() : a(""), b("") {  // std::cout << "baseConstuctor" << std::endl;
-  }
-
-  testClass(const std::string& a, const std::string& b) : a(a), b(b) {
-    // std::cout << "usualConstuctor" << std::endl;
-  }
-
-  testClass(const testClass& other) : a(other.a), b(other.b) {
-    // std::cout << "copyConstuctor" << std::endl;
-  }
-
-  testClass(testClass&& other) : a(std::move(other.a)), b(std::move(other.b)) {
-    // std::cout << "moveConstuctor" << std::endl;
-  }
-  bool operator==(const testClass& other) const {
-    return other.a == a && other.b == b;
-  }
-  testClass& operator=(const testClass& other) {
-    a = other.a;
-    b = other.b;
-    return *this;
-  }
-};
-std::ostream& operator<<(std::ostream& stream, const testClass& test_obj) {
-  std::cout << test_obj.a << " " << test_obj.b << std::endl;
-  return stream;
-}
+#include "test_class.h"
 
 class ListTest : public ::testing::Test {
  protected:
