@@ -35,8 +35,21 @@ class vector {
 
   vector(const vector &other) : vector(other.begin(), other.end()) {}
 
-  vector &operator=(const vector &) {
-    // TODO
+  ~vector() {
+    freeDataArray(data_, capacity_, size_);
+  }
+
+  vector &operator=(const vector &other) {
+    if (this != &other) {
+      vector(other).swap(*this);
+    }
+    return *this;
+  }
+
+  vector &operator=(vector &&other) {
+    if (this != &other) {
+      vector(std::move(other)).swap(*this);
+    }
     return *this;
   }
 
@@ -84,6 +97,13 @@ class vector {
     data_ = new_data;
     capacity_ = size_;
   };
+
+  void swap(vector &other) {
+    std::swap(data_, other.data_);
+    std::swap(capacity_, other.capacity_);
+    std::swap(alloc_, other.alloc_);
+    std::swap(size_, other.size_);
+  }
 
  private:
   pointer data_;
