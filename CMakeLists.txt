@@ -39,7 +39,7 @@ append_coverage_compiler_flags_to_target(test)
 setup_target_for_coverage_lcov(
             NAME test_coverage
             EXECUTABLE test
-            EXCLUDE "${PROJECT_SOURCE_DIR}/dependencies/*" "/Applications/*" "/usr/local/*" "/usr/include/*"
+            EXCLUDE ${CMAKE_BINARY_DIR}/* "${PROJECT_SOURCE_DIR}/dependencies/*" "/Applications/*" "/usr/local/*" "/usr/include/*"
             DEPENDENCIES test
     )
 endif()
