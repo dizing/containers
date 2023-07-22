@@ -62,21 +62,16 @@ class vector {
     CreateElement(&data_[size_], value);
     ++size_;
   };
-
   iterator insert(iterator pos, const_reference value) {
-    AutomaticReserveLogic();
-    alloc_traits::construct(alloc_, data_ + size_);
-    for(iterator i = end(); i > pos; --i) {
-      *i = *(i - 1);
-    }
-    CreateElement(pos, value);
-    ++size_;
-    return pos;
+    return UniversalReferenseInsert(pos, value);
+  }
+  iterator insert(iterator pos, value_type &&value) {
+    return UniversalReferenseInsert(pos, std::move(value));
   }
 
   void erase(iterator pos) {
     // alloc_traits::destroy(alloc_, pos);
-    for(iterator i = pos; i < end() - 1; ++i) {
+    for (iterator i = pos; i < end() - 1; ++i) {
       *i = *(i + 1);
     }
     --size_;
@@ -170,7 +165,7 @@ class vector {
                              pointer data_for_moving) {
     pointer new_data = alloc_traits::allocate(alloc_, new_capacity);
     try {
-      ConstructElementsFromAnotherData(0, element_recreating_count,
+      ConstructElementsFromAnotherData(element_recreating_count,
                                        data_for_moving, new_data);
     } catch (...) {
       alloc_traits::deallocate(alloc_, new_data, new_capacity);
@@ -179,9 +174,9 @@ class vector {
     return new_data;
   }
 
-  void ConstructElementsFromAnotherData(size_type start_pos, size_type count,
-                                        pointer data_from, pointer data_to) {
-    for (size_type i = start_pos; i < count; ++i) {
+  void ConstructElementsFromAnotherData(size_type count, pointer data_from,
+                                        pointer data_to) {
+    for (size_type i = 0; i < count; ++i) {
       try {
         alloc_traits::construct(alloc_, data_to + i, data_from[i]);
       } catch (...) {
@@ -210,6 +205,25 @@ class vector {
         reserve(capacity_ * 2);
       }
     }
+  }
+
+  template <typename U>
+  iterator UniversalReferenseInsert(iterator pos, U &&value) {
+    size_type before_insert_count =
+        static_cast<size_type>(std::distance(begin(), pos));
+    size_type after_insert_count =
+        static_cast<size_type>(std::distance(pos, end()));
+    AutomaticReserveLogic();
+    pointer new_data = alloc_traits::allocate(alloc_, capacity_);
+    ConstructElementsFromAnotherData(before_insert_count, data_, new_data);
+    ConstructElementsFromAnotherData(after_insert_count,
+                                     data_ + before_insert_count,
+                                     new_data + before_insert_count + 1);
+    CreateElement(new_data + before_insert_count, std::forward<U>(value));
+    freeDataArray(data_, capacity_, size_);
+    data_ = new_data;
+    ++size_;
+    return pos;
   }
 };
 

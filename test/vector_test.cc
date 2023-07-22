@@ -81,11 +81,14 @@ TEST_F(VectorTest, Modifiers) {
   testClass temp = {"323", "232"};
   vec.push_back(temp);
   std_vec.push_back(temp);
+  check_with_std(vec, std_vec);
   auto vec_end = vec.end();
   vec.insert(--vec_end, temp);
   std_vec.insert(--std_vec.end(), temp);
   vec.insert(vec.end(), temp);
   std_vec.insert(std_vec.end(), temp);
+  vec.insert(vec.begin(), testClass("Nano", "Macro"));
+  std_vec.insert(std_vec.begin(), testClass("Nano", "Macro"));
   check_with_std(vec, std_vec);
   // vec.erase(vec.begin());
   // std_vec.erase(std_vec.begin());
