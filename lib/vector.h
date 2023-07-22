@@ -63,17 +63,30 @@ class vector {
     ++size_;
   };
   iterator insert(iterator pos, const_reference value) {
-    return UniversalReferenseInsert(pos, value);
+    return InsertElement(pos, value);
   }
   iterator insert(iterator pos, value_type &&value) {
-    return UniversalReferenseInsert(pos, std::move(value));
+    return InsertElement(pos, std::move(value));
   }
 
   void erase(iterator pos) {
-    // alloc_traits::destroy(alloc_, pos);
-    for (iterator i = pos; i < end() - 1; ++i) {
-      *i = *(i + 1);
-    }
+    size_type before_erase_count =
+        static_cast<size_type>(std::distance(begin(), pos));
+    size_type after_erase_count =
+        static_cast<size_type>(std::distance(pos, end()));
+    pointer new_data = alloc_traits::allocate(alloc_, capacity_);
+
+    ConstructElementsFromAnotherData(before_erase_count, data_, new_data);
+    ConstructElementsFromAnotherData(after_erase_count - 1,
+                                     data_ + before_erase_count + 1,
+                                     new_data + before_erase_count);
+    freeDataArray(data_, capacity_, size_);
+    data_ = new_data;
+    --size_;
+  }
+
+  void pop_back() {
+    alloc_traits::destroy(alloc_, data_ + size_);
     --size_;
   }
 
@@ -208,7 +221,7 @@ class vector {
   }
 
   template <typename U>
-  iterator UniversalReferenseInsert(iterator pos, U &&value) {
+  iterator InsertElement(iterator pos, U &&value) {
     size_type before_insert_count =
         static_cast<size_type>(std::distance(begin(), pos));
     size_type after_insert_count =

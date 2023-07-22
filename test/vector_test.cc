@@ -38,6 +38,11 @@ TEST_F(VectorTest, ConstructorTest) {
   vector vec_copy_constructor(vec_from_rvalue_list);
   std::vector std_vec_copy_constructor(std_from_rvalue_list);
   check_with_std(vec_copy_constructor, std_vec_copy_constructor);
+
+  vector vec_move_constructor(std::move(vec_copy_constructor));
+  std::vector std_vec_move_constructor(std::move(std_from_rvalue_list));
+  check_with_std(vec_copy_constructor, std_vec_copy_constructor);
+  check_with_std(vec_move_constructor, std_vec_move_constructor);
 }
 
 TEST_F(VectorTest, ElementAccess) {
@@ -54,6 +59,7 @@ TEST_F(VectorTest, ElementAccess) {
             false);
   EXPECT_EQ(std::is_const_v<std::remove_reference_t<decltype(vec[3])>>, false);
 
+  // CONST ELEMENT ACCESS
   const vector<testClass> const_vec = {
       {"Alfa", "Omega"}, {"Delta", "Theta"}, {"union", "except"}};
   const std::vector<testClass> const_std_vec = {
@@ -76,12 +82,15 @@ TEST_F(VectorTest, Modifiers) {
   std::vector<testClass> std_vec = {
       {"Alfa", "Omega"}, {"Delta", "Theta"}, {"union", "except"}};
   check_with_std(vec, std_vec);
+  // PUSH_BACK
   vec.push_back(testClass("323", "232"));
   std_vec.push_back(testClass("323", "232"));
   testClass temp = {"323", "232"};
   vec.push_back(temp);
   std_vec.push_back(temp);
   check_with_std(vec, std_vec);
+
+  // INSERT
   auto vec_end = vec.end();
   vec.insert(--vec_end, temp);
   std_vec.insert(--std_vec.end(), temp);
@@ -90,10 +99,19 @@ TEST_F(VectorTest, Modifiers) {
   vec.insert(vec.begin(), testClass("Nano", "Macro"));
   std_vec.insert(std_vec.begin(), testClass("Nano", "Macro"));
   check_with_std(vec, std_vec);
-  // vec.erase(vec.begin());
-  // std_vec.erase(std_vec.begin());
-  // check_with_std(vec, std_vec);
-  // vec.clear();
-  // std_vec.clear();
-  // check_with_std(vec, std_vec);
+
+  // ERASE
+  vec.erase(vec.begin());
+  std_vec.erase(std_vec.begin());
+  check_with_std(vec, std_vec);
+
+  // POP_BACK
+  vec.pop_back();
+  std_vec.pop_back();
+  check_with_std(vec, std_vec);
+
+  // CLEAR
+  vec.clear();
+  std_vec.clear();
+  check_with_std(vec, std_vec);
 }
