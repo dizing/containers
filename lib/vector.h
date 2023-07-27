@@ -64,10 +64,10 @@ class vector {
     CreateElement(&data_[size_], value);
     ++size_;
   };
-  iterator insert(iterator pos, const_reference value) {
+  iterator insert(const_iterator pos, const_reference value) {
     return InsertElement(pos, value);
   }
-  iterator insert(iterator pos, value_type &&value) {
+  iterator insert(const_iterator pos, value_type &&value) {
     return InsertElement(pos, std::move(value));
   }
 
@@ -127,9 +127,13 @@ class vector {
 
   const_iterator begin() const { return data_; };
 
+  const_iterator cbegin() { return data_; };
+
   iterator end() { return data_ + size_; }
 
   const_iterator end() const { return data_ + size_; };
+
+  const_iterator cend() { return data_ + size_; };
 
   // CAPACITY
   bool empty() { return size_ == 0; };
@@ -161,6 +165,37 @@ class vector {
     std::swap(capacity_, other.capacity_);
     std::swap(alloc_, other.alloc_);
     std::swap(size_, other.size_);
+  }
+
+  template <class... Args>
+  iterator insert_many(const_iterator pos, Args &&...args) {
+    static_assert(
+        (std::is_same_v<value_type, std::remove_reference_t<decltype(args)>> &&
+         ...));
+    size_type before_insert_count =
+        static_cast<size_type>(std::distance(cbegin(), pos));
+    size_type after_insert_count =
+        static_cast<size_type>(std::distance(pos, cend()));
+    reserve(capacity_ + sizeof...(args));
+    pointer new_data = alloc_traits::allocate(alloc_, capacity_);
+    ConstructElementsFromAnotherData(before_insert_count, data_, new_data);
+    ConstructElementsFromAnotherData(
+        after_insert_count, data_ + before_insert_count,
+        new_data + before_insert_count + sizeof...(args));
+    size_type tmp = before_insert_count - 1;
+    (CreateElement(new_data + ++tmp, std::forward<Args>(args)), ...);
+    freeDataArray(data_, capacity_, size_);
+    data_ = new_data;
+    size_ += sizeof...(args);
+    return data_ + before_insert_count;
+  }
+
+  template <class... Args>
+  void insert_many_back(Args &&...args) {
+    static_assert(
+        (std::is_same_v<value_type, std::remove_reference_t<decltype(args)>> &&
+         ...));
+    (push_back(std::forward<Args>(args)), ...);
   }
 
  private:
@@ -223,11 +258,11 @@ class vector {
   }
 
   template <typename U>
-  iterator InsertElement(iterator pos, U &&value) {
+  iterator InsertElement(const_iterator pos, U &&value) {
     size_type before_insert_count =
-        static_cast<size_type>(std::distance(begin(), pos));
+        static_cast<size_type>(std::distance(cbegin(), pos));
     size_type after_insert_count =
-        static_cast<size_type>(std::distance(pos, end()));
+        static_cast<size_type>(std::distance(pos, cend()));
     AutomaticReserveLogic();
     pointer new_data = alloc_traits::allocate(alloc_, capacity_);
     ConstructElementsFromAnotherData(before_insert_count, data_, new_data);
@@ -238,7 +273,7 @@ class vector {
     freeDataArray(data_, capacity_, size_);
     data_ = new_data;
     ++size_;
-    return pos;
+    return data_ + before_insert_count;
   }
 };
 
@@ -247,6 +282,6 @@ template <typename Iter>
 vector(Iter beg, Iter end)
     -> vector<typename std::iterator_traits<Iter>::value_type>;
 
-}
+}  // namespace dizing
 
 #endif  // CONTAINERS_LIB_VECTOR_H

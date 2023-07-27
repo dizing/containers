@@ -366,17 +366,19 @@ class list {
   }
 
   template <class... Args>
-  iterator insert_many(const_iterator pos, Args&&... args) {
-    static_assert((std::is_same_v<value_type, std::remove_reference_t<decltype(args)>> && ...));
+  iterator insert_many(const_iterator pos, Args &&...args) {
+    static_assert(
+        (std::is_same_v<value_type, std::remove_reference_t<decltype(args)>> &&
+         ...));
     (insert(pos, std::forward<Args>(args)), ...);
     return IteratorConstCast(pos);
   }
   template <class... Args>
-  void insert_many_back(Args&&... args) {
+  void insert_many_back(Args &&...args) {
     insert_many(end(), args...);
   }
   template <class... Args>
-  void insert_many_front(Args&&... args) {
+  void insert_many_front(Args &&...args) {
     insert_many(begin(), args...);
   }
 
@@ -454,7 +456,6 @@ class list {
     }
     swap(temp);
   }
-
 };
 
 // Deduction guide for initializer list constructor

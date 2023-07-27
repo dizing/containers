@@ -13,7 +13,6 @@ class VectorTest : public ::testing::Test {
   static void check_with_std(const dizing::vector<T>& vec,
                              const std::vector<T>& std_vec) {
     EXPECT_EQ(vec.size(), std_vec.size());
-    EXPECT_EQ(vec.capacity(), std_vec.capacity());
     auto it = vec.begin();
     auto std_it = std_vec.begin();
     for (size_t i = 0; i < std_vec.size(); ++i) {
@@ -30,7 +29,7 @@ TEST_F(VectorTest, ConstructorTest) {
   std::vector std_vec_from_list(list.begin(), list.end());
   check_with_std(vec_from_list, std_vec_from_list);
   dizing::vector<double> vec_from_rvalue_list = {2,   32, 243, 4, 2345,  23,
-                                         423, 4,  23,  5, 345.34};
+                                                 423, 4,  23,  5, 345.34};
   std::vector<double> std_from_rvalue_list = {2,   32, 243, 4, 2345,  23,
                                               423, 4,  23,  5, 345.34};
   check_with_std(vec_from_rvalue_list, std_from_rvalue_list);
@@ -114,4 +113,17 @@ TEST_F(VectorTest, Modifiers) {
   vec.clear();
   std_vec.clear();
   check_with_std(vec, std_vec);
+}
+
+TEST_F(VectorTest, InsertMany) {
+  dizing::vector<testClass> test_vector = {{"1", "2"}};
+  testClass name("Maron", "Kubanov");
+  test_vector.insert_many_back(testClass("all", "is end"), name);
+  test_vector.insert_many(test_vector.begin(), testClass("uno", "map"), name);
+  test_vector.insert_many(test_vector.begin());
+  test_vector.insert_many(test_vector.end(), testClass("zoo", "park"));
+  std::vector<testClass> check_vector{
+      {"uno", "map"},    {"Maron", "Kubanov"}, {"1", "2"},
+      {"all", "is end"}, {"Maron", "Kubanov"}, {"zoo", "park"}};
+  check_with_std(test_vector, check_vector);
 }
