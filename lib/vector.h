@@ -88,7 +88,7 @@ class vector {
   }
 
   void pop_back() {
-    alloc_traits::destroy(alloc_, data_ + size_);
+    alloc_traits::destroy(alloc_, data_ + size_ - 1);
     --size_;
   }
 

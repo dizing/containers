@@ -189,3 +189,15 @@ TEST_F(ListTest, Ordering) {
   std_int_list3.sort();
   check_with_std(int_list3, std_int_list3);
 }
+
+TEST_F(ListTest, InsertMany) {
+  dizing::list<testClass> test_list = {{"1", "2"}};
+  testClass name("Maron", "Kubanov");
+  test_list.insert_many_front(testClass("-1", "0"), testClass("3", "4"));
+  test_list.insert_many_back(testClass("all", "is end"));
+  test_list.insert_many(++test_list.begin(), testClass("uno", "map"), name);
+  test_list.insert_many(++test_list.begin());
+  test_list.insert_many(test_list.end(), testClass("zoo", "park"));
+  std::list<testClass> check_list {{"-1", "0"}, {"uno", "map"}, {"Maron", "Kubanov"}, {"3", "4"}, {"1", "2"}, {"all", "is end"}, {"zoo", "park"}};
+  check_with_std(test_list, check_list);
+}
