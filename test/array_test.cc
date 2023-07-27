@@ -16,17 +16,18 @@ class ArrayTest : public ::testing::Test {
                   });
   }
   std::array<double, 6> std_arr = {1, 2, 3, 4};
-  array<double, 6> arr = {1, 2, 3, 4};
+  dizing::array<double, 6> arr = {1, 2, 3, 4};
   std::array<std::string, 6> std_arr2 = {"232", "232", "232", "232"};
-  array<std::string, 6> arr2 = {"232", "232", "232", "232"};
+  dizing::array<std::string, 6> arr2 = {"232", "232", "232", "232"};
   const std::array<double, 6> std_const_arr = {1, 2, 3, 4};
-  const array<double, 6> const_arr = {1, 2, 3, 4};
+  const dizing::array<double, 6> const_arr = {1, 2, 3, 4};
   std::array<const std::vector<int>, 2> std_arr_const_vec = {
       {{1, 2, 3}, {1, 2, 3}}};
-  array<const std::vector<int>, 2> arr_const_vec = {{{1, 2, 3}, {1, 2, 3}}};
+  dizing::array<const std::vector<int>, 2> arr_const_vec = {
+      {{1, 2, 3}, {1, 2, 3}}};
   std::array<int, 10> std_base_constructor = std::array<int, 10>();
-  array<int, 10> base_constructor = array<int, 10>();
-  array<int, 0> zero_arr = array<int, 0>();
+  dizing::array<int, 10> base_constructor = dizing::array<int, 10>();
+  dizing::array<int, 0> zero_arr = dizing::array<int, 0>();
   std::array<int, 0> std_zero_arr = std::array<int, 0>();
 };
 
@@ -66,14 +67,14 @@ TEST_F(ArrayTest, modifiers) {
     EXPECT_EQ(arr[i], std_arr[i]);
   }
 
-  array<double, 6> arr_analog = {4, 3, 2, 1};
+  dizing::array<double, 6> arr_analog = {4, 3, 2, 1};
   arr_analog.swap(arr);
   for (size_t i = 0; i < 4; ++i) {
     EXPECT_DOUBLE_EQ(arr_analog[i], 2.3);
     EXPECT_EQ(arr[i], 4 - i);
   }
 
-  array<std::string, 6> arr2_analog = {"new", "new", "new", "new"};
+  dizing::array<std::string, 6> arr2_analog = {"new", "new", "new", "new"};
   arr2_analog.swap(arr2);
   for (size_t i = 0; i < 4; ++i) {
     EXPECT_EQ(arr2_analog[i], "232");

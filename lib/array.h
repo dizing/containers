@@ -2,6 +2,8 @@
 #define CONTAINERS_LIB_ARRAY_H
 #include <stdexcept>
 
+namespace dizing {
+
 // Helper structs.
 template <typename T, std::size_t size_>
 struct array_traits {
@@ -104,5 +106,7 @@ class array {
 // For example guide array = {1, 2} to array<int, 2> = {1, 2}
 template <typename T, typename... Targs>
 array(T, Targs...) -> array<T, sizeof...(Targs) + 1>;
+
+}  // namespace dizing
 
 #endif  // CONTAINERS_LIB_ARRAY_H

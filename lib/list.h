@@ -3,6 +3,11 @@
 
 #include <iostream>
 #include <memory>
+
+namespace dizing {
+
+namespace list_internal {
+
 struct BaseListNode {
   BaseListNode *prev_;
   BaseListNode *next_;
@@ -106,17 +111,19 @@ class ListIterator {
   bool operator!=(const ListIterator &other) const { return !(*this == other); }
 };
 
+}  // namespace list_internal
+
 template <typename T, typename Allocator = std::allocator<T>>
 class list {
  public:
   using value_type = T;
   using reference = value_type &;
   using const_reference = const value_type &;
-  using iterator = ListIterator<value_type, false>;
-  using const_iterator = ListIterator<value_type, true>;
+  using iterator = list_internal::ListIterator<value_type, false>;
+  using const_iterator = list_internal::ListIterator<value_type, true>;
   using size_type = std::size_t;
-  using base_node = BaseListNode;
-  using node = ListNode<value_type>;
+  using base_node = list_internal::BaseListNode;
+  using node = list_internal::ListNode<value_type>;
   using value_traits = std::allocator_traits<Allocator>;
   using node_alloc = typename value_traits::rebind_alloc<node>;
   using node_traits = typename value_traits::rebind_traits<node>;
@@ -438,5 +445,7 @@ class list {
 // It depends on compiler, will it be created by default
 template <typename T>
 list(std::initializer_list<T>) -> list<T>;
+
+}  // namespace dizing
 
 #endif  // CONTAINERS_LIB_LIST_H

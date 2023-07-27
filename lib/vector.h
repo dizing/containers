@@ -4,6 +4,8 @@
 #include <iterator>
 #include <memory>
 
+namespace dizing {
+
 template <typename T, typename Allocator = std::allocator<T>>
 class vector {
  public:
@@ -244,5 +246,7 @@ class vector {
 template <typename Iter>
 vector(Iter beg, Iter end)
     -> vector<typename std::iterator_traits<Iter>::value_type>;
+
+}
 
 #endif  // CONTAINERS_LIB_VECTOR_H

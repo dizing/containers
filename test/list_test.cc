@@ -9,16 +9,16 @@ class ListTest : public ::testing::Test {
   ListTest() {}
 
   std::list<testClass> stdll = std::list<testClass>();
-  list<testClass> ll = list<testClass>();
+  dizing::list<testClass> ll = dizing::list<testClass>();
   std::list<testClass> stdll_il = {{"first", "second"},
                                    {"firstfirst", "secondsecond"}};
-  list<testClass> ll_il = {{"first", "second"}, {"firstfirst", "secondsecond"}};
+  dizing::list<testClass> ll_il = {{"first", "second"}, {"firstfirst", "secondsecond"}};
 
   const std::list<testClass> const_std_list = {{"a", "b"}, {"c", "d"}};
-  const list<testClass> const_list = {{"a", "b"}, {"c", "d"}};
+  const dizing::list<testClass> const_list = {{"a", "b"}, {"c", "d"}};
 
   template <typename T>
-  static void check_with_std(const list<T>& ll, const std::list<T>& stdll) {
+  static void check_with_std(const dizing::list<T>& ll, const std::list<T>& stdll) {
     EXPECT_EQ(ll.size(), stdll.size());
     auto ll_it = ll.begin();
     auto stdll_it = stdll.begin();
@@ -34,23 +34,23 @@ TEST_F(ListTest, Constructors) {
   check_with_std(ll_il, stdll_il);
   check_with_std(const_list, const_std_list);
 
-  list from_copy_constructor = ll_il;
+  dizing::list from_copy_constructor = ll_il;
   std::list std_from_copy_constructor = stdll_il;
   check_with_std(from_copy_constructor, std_from_copy_constructor);
 
-  list from_move_constructor = std::move(from_copy_constructor);
+  dizing::list from_move_constructor = std::move(from_copy_constructor);
   std::list std_from_move_constructor = std::move(std_from_copy_constructor);
   check_with_std(from_move_constructor, std_from_move_constructor);
   check_with_std(from_copy_constructor,
                  std_from_copy_constructor);  // check that values stolen
 
-  list<testClass> assign = {{"12", "12"}};
+  dizing::list<testClass> assign = {{"12", "12"}};
   std::list<testClass> std_assign = {{"12", "12"}};
 
   assign = ll_il;
   std_assign = stdll_il;
   check_with_std(assign, std_assign);
-  assign = list<testClass>({{"12", "12"}, {"22", "22"}});
+  assign = dizing::list<testClass>({{"12", "12"}, {"22", "22"}});
   std_assign = std::list<testClass>({{"12", "12"}, {"22", "22"}});
   check_with_std(assign, std_assign);
 }
@@ -85,14 +85,14 @@ TEST_F(ListTest, OneElementModifiers) {
 }
 
 TEST_F(ListTest, swap) {
-  list<testClass> list_for_swap = {{"1", "2"}, {"31", "23"}, {"12", "22"}};
+  dizing::list<testClass> list_for_swap = {{"1", "2"}, {"31", "23"}, {"12", "22"}};
   std::list<testClass> stdlist_for_swap = {
       {"1", "2"}, {"31", "23"}, {"12", "22"}};
 
-  list<testClass> list_for_swap2 = {{"dasd", "sad"}, {"gdf", "asda"}};
+  dizing::list<testClass> list_for_swap2 = {{"dasd", "sad"}, {"gdf", "asda"}}; 
   std::list<testClass> stdlist_for_swap2 = {{"dasd", "sad"}, {"gdf", "asda"}};
 
-  list<testClass> list_for_swap3;          // empty
+  dizing::list<testClass> list_for_swap3;          // empty
   std::list<testClass> stdlist_for_swap3;  // empty
 
   list_for_swap.swap(list_for_swap2);
@@ -129,13 +129,13 @@ TEST_F(ListTest, ElementAccess) {
 }
 
 TEST_F(ListTest, EntireListModifiers) {
-  list<testClass> non_empty = {{"dasd", "sad"}, {"dasd", "sad"},
+  dizing::list<testClass> non_empty = {{"dasd", "sad"}, {"dasd", "sad"},
                                {"gdf", "asda"}, {"dsd", "2323"},
                                {"dasd", "sad"}, {"1", "2"}};
   std::list<testClass> std_non_empty = {{"dasd", "sad"}, {"dasd", "sad"},
                                         {"gdf", "asda"}, {"dsd", "2323"},
                                         {"dasd", "sad"}, {"1", "2"}};
-  list<testClass> for_splice = {{"8", "6"}, {"4", "5"}, {"1", "2"},
+  dizing::list<testClass> for_splice = {{"8", "6"}, {"4", "5"}, {"1", "2"},
                                 {"0", "0"}, {"0", "0"}, {"0", "0"}};
   std::list<testClass> std_for_splice = {{"8", "6"}, {"4", "5"}, {"1", "2"},
                                          {"0", "0"}, {"0", "0"}, {"0", "0"}};
@@ -167,9 +167,9 @@ TEST_F(ListTest, EntireListModifiers) {
 }
 
 TEST_F(ListTest, Ordering) {
-  list<int> int_list = {1, 3, 3, 5, 7, 11, 1337};
+  dizing::list<int> int_list = {1, 3, 3, 5, 7, 11, 1337};
   std::list<int> std_int_list = {1, 3, 3, 5, 7, 11, 1337};
-  list<int> int_list2 = {2, 4, 8, 16, 32, 32, 64, 128, 1024};
+  dizing::list<int> int_list2 = {2, 4, 8, 16, 32, 32, 64, 128, 1024};
   std::list<int> std_int_list2 = {2, 4, 8, 16, 32, 32, 64, 128, 1024};
   check_with_std(int_list, std_int_list);
   check_with_std(int_list2, std_int_list2);
@@ -179,7 +179,7 @@ TEST_F(ListTest, Ordering) {
   check_with_std(int_list, std_int_list);
   check_with_std(int_list2, std_int_list2);
 
-  list<int> int_list3 = {32, 23,   24, 214, 23, 4523, 512, 34,  1232, 12, 31,
+  dizing::list<int> int_list3 = {32, 23,   24, 214, 23, 4523, 512, 34,  1232, 12, 31,
                          4,  3456, 45, 523, 34, 23,   421, 534, 63,   453};
   std::list<int> std_int_list3 = {32,  23,   24, 214, 23,  4523, 512,
                                   34,  1232, 12, 31,  4,   3456, 45,
