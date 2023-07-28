@@ -3,6 +3,7 @@
 
 #include "array.h"
 #include "list.h"
+#include "queue.h"
 #include "stack.h"
 #include "vector.h"
 
